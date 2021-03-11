@@ -1,0 +1,34 @@
+"""Digital Input IR
+
+
+Reads a digital (1 or 0) value from an IR sensor connected to the pin A0
+and prints the value to the REPL every 100 ms.
+"""
+
+# Import the `Pin' class from the `machine' module
+from machine import Pin
+# Import the `time' module
+import time
+# Create a Pin instance to configure pin A0/PA0 as a digital input
+IR_sensor = Pin("A0", Pin.IN)
+green_led = Pin("D13", Pin.OUT)
+# Declare a variable "sensor_reading" that we can use later,
+# At the same time we declare it we set it equal to 0,
+# It is declared here so that it can be used inside the while loop
+sensor_reading = 1
+
+while True:
+    # Put code here to run forever
+
+    time.sleep(0.1)        # TODO: Insert 0.1s sleep here
+
+    sensor_reading = IR_sensor.value()          # TODO: Read the sensor's value into sensor_reading here
+    green_led.value(sensor_reading)
+    # Print the latest value read from the sensor to the REPL
+    print(sensor_reading)
+    # Extended TODO: Set the green LED on the board to the value read from the sensor
+
+# Hint: If you want to stop the execution of this code and go back to the REPL
+#       you can hit CTRL+C in the MicroPython REPL to send a 'halt' signal.
+#       To get back to this code, hitting CTRL+D will perform a soft-restart,
+#       launching main.py again.
