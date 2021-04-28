@@ -1,0 +1,137 @@
+Questions to be answered. 
+
+Measure actual dimensions on robot to check distance from US sensor to corners/sides of the robot. 
+
+How accurate is the line tracking – how much does it run out from side to side while following the line? 
+
+How accurate does the robot run in a straight line when not tracking a line? 
+
+ 
+
+Track segment (6) – Distracting lines 
+
+Approach is to drive straight using the two centre line sensors to follow the line in analog mode.  
+
+The outer line sensors are in digital output mode and will provide feedback of either 1 for a line and 0 for no line. 
+
+It will hopefully be possible to use the outside line sensors to ‘count’ the distracting lines. This information can then be used to switch the state of the robot for the track segment that follows (6). 
+
+Alternatively go by encoder count and switch state based on that. 
+
+Using ‘Line_Following’ code from Joe 
+
+ 
+
+BEGIN 
+
+	State == Line following 
+
+	Sum_left_line_sensor = 0 
+
+	Sum_right_line_sensor = 0 
+
+	sensor_reading1 = IR_sensor1.value() 	# Sensor left in digital mode 
+
+	sensor_reading4 = IR_sensor4.value()	# Sensor right in digital mode 
+
+	While line sensor 2, 3 values > xx & sensor 1, 4 values = 0 
+
+continue using line following code 
+
+If sensor_reading4 = 1 
+
+	Count the time that it equals one 
+
+	If reading time > xx  
+
+		Sum_right_line_sensor = Sum_right_line_sensor + 1 
+
+	Sleep(xx)	need to adjust sleep time 
+
+If sensor_reading1 = 1 
+
+	Count the time that it equals one 
+
+	If reading time > xx  
+
+		Sum_left_line_sensor = Sum_left_line_sensor + 1 
+
+	Sleep(xx)	need to adjust sleep time 
+
+When Sum_left_line_sensor = 1 and Sum_right_line_sensor = 2 
+
+	Switch to next line segment state 
+
+ 
+
+ 
+
+Track segment (8) – Convergent Hallway 
+
+Using ‘Line_Following’ code from Joe 
+
+Utilise the US sensor and servo to scan side to side. If sensor reading is < XX on the left side, turn right, if sensor value is < XX on the right side, turn left. 
+
+Plan is to swing the servo through the full range and take the lowest ultrasonic sensor value. Because the ultrasonic sensor reading won’t be accurate unless the servo hits the side wall square on. 
+
+Plan is to turn away from the wall, go so many clicks on the encoder, then turn the other way to hopefully straighten the robot within the converging hallway 
+
+ 
+
+Exit servo and ultrasonic sensor mode when the line at the other end of the convergent hallway is detected. 
+
+BEGIN 
+
+	State == Line following 
+
+	If line sensor 1, 2, 3 ,4  == 0  
+
+state == drive straight  
+
+my_servo1 = Servo(1) 
+
+dist = ultrasonic_sensor.distance_mm()  
+
+		initialize ultrasonic sensor 
+
+		initialise servo 
+
+		for desired_angle in range(70, -70, -1): 
+
+        # ...steps of -1 
+
+        my_servo.angle(desired_angle)    # Tell servo to go to desired_angle 
+
+        my_servo1.angle(desired_angle) 
+
+        sleep(0.01)    # Waits 10ms for the servo to reach angle 
+
+        dist = ultrasonic_sensor.distance_mm() 
+
+        print(dist) 
+
+        if dist < (distance TBD): 
+
+	Read servo angle to determine if on left or right side 
+
+	Swing servo through full range 
+
+	Measure smallest ultrasonic reading 
+
+	If smallest ultrasonic reading under xx turn  
+
+	Turn left/right away from wall 
+
+	Drive straight for xx clicks of the encode 
+
+	Turn opposite direction to straighten up 
+
+	Drive straight 
+
+If line detected state == line following 
+
+ 
+
+ 
+
+ 
