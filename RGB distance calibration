@@ -1,0 +1,43 @@
+import ultrasonic
+from machine import SoftI2C, Pin
+from time import sleep
+from APDS9960LITE import APDS9960LITE
+
+TRIG = "D11"
+ECHO = "D10"
+ultrasonic_sensor = ultrasonic.HCSR04(TRIG, ECHO)
+
+# Initialise I2C bus
+i2c = SoftI2C(scl=Pin("PB13"), sda=Pin("PB14"))
+# Initialise APDS9960
+apds9960 = APDS9960LITE(i2c)    # Create APDS9960 sensor object
+apds9960.prox.enableSensor()    # Send I2C command to enable sensor
+sleep(0.1)    # Let sensor measurement stabilise before starting loop
+
+
+for i in range(100):  # Take 100 measurements
+    proximity_measurement = apds9960.prox.proximityLevel  # Read the proximity value
+    ultrasonic_measurement_mm = ultrasonic_sensor.distance_mm()
+    print("{:3d}, {:4.2f}".format(proximity_measurement, ultrasonic_measurement_mm))
+    sleep(0.2)  # Wait for measurement to be ready
+print("Experiment finished! Please restart processor to repeat.")
+
+
+# RUN THIS AFTER USING DATA FROM THE EXPERIMENT
+
+import matplotlib.pyplot as plt
+import csv
+
+apds9960 = []
+ultrasonic = []
+with open('distance_csv.txt','r') as csvfile:
+    plotdata = csv.reader(csvfile, delimiter=',')
+    for row in plotdata:
+        apds9960.append(int(row[0]))
+        ultrasonic.append(int(row[1]))
+
+plt.plot(ultrasonic, apds9960, marker='o')
+plt.title("APDS9960 vs Ultrasonic Sensor")
+plt.xlabel("Ultrasonic distance [mm]")
+plt.ylabel("APDS9960 distance [no units]")
+plt.show()
