@@ -1,0 +1,107 @@
+from pyb import Pin, ADC
+from motor import Motor
+from time import sleep
+from encoder import Encoder
+import ultrasonic
+
+
+def clicksneeded(angle):
+    from math import pi
+    wheeldiameter = 65
+    """diameter in mm"""
+    wheelbase = 140
+    """wheel base in mm"""
+    angelturn = angle * pi/180
+    """defines the angle we want to turn"""
+    turningradius = wheelbase / 2
+    cee = wheeldiameter * pi
+    length = angelturn * turningradius
+    total = (length/cee)*20
+    return round(total)
+
+
+motor_left = Motor("left", "D6", "D7", "D4")
+motor_right = Motor("right", "D8", "D9", "D5")
+LPWM = 75
+RPWM = 78
+""" IR sensors outer as digital input"""
+IR_SensorLL = Pin("A1", Pin.IN)    # LH outer
+IR_SensorRR = Pin("A4", Pin.IN)    # RH outer
+IR_SensorL = ADC(Pin('A3'))
+IR_SensorR = ADC(Pin('A2'))
+LReading = 0
+RReading = 0
+ENC_L = "D2"
+ENC_R = "D3"
+enc = Encoder(ENC_L, ENC_R)
+TRIG = "D11"
+ECHO = "D10"
+ultrasonic_sensor = ultrasonic.HCSR04(TRIG, ECHO)
+while True:
+    motor_left.set_forwards()
+    motor_right.set_forwards()
+    motor_left.duty(LPWM)
+    motor_right.duty(RPWM)
+    """ Sets both motors forward """
+    # for i in range(0, 5):
+    #     LReading = IR_SensorL.read()
+    #     RReading = IR_SensorR.read()
+    #     sumL += LReading
+    #     sumR += RReading
+    #     time.sleep(0.01)
+    #     """ Takes 5 independent measurements, I was worried about outliers throwing the robot off course"""
+    """ IR sensors outer as digital input"""
+    IR_LL = IR_SensorLL.read()
+    IR_RR = IR_SensorRR.read()
+    IR_L = IR_SensorL.read()
+    IR_R = IR_SensorR.read()
+    # print(AverageL, AverageR)
+    """ flip sensor to read 1(one) when line detected"""
+    IR_LL = 1 - IR_LL
+    IR_RR = 1 - IR_RR
+    if IR_R < IR_L+20:
+        RPWM = 0
+        LPWM = 65
+    elif IR_L < IR_R + 20:
+        RPWM = 65
+        LPWM = 0
+    elif IR_LL == 1:
+        current_time = int(time.time())    # time variable to check if something happened in last xx seconds
+        if current_time == current_time + 1 and IR_L == 0 and IR_R == 0:    # ADJUST TIME HERE
+            RPWM = 75
+            LPWM = 65
+            if current_time == current_time + 1 and IR_LL == 1:
+                break
+    elif IR_RR == 1:
+        current_time = int(time.time())  # time variable to check if something happened in last xx seconds
+        if current_time == current_time + 1 and IR_L == 0 and IR_R == 0:  # ADJUST TIME HERE
+            RPWM = 75
+            LPWM = 65
+            if current_time == current_time + 1 and IR_RR == 1:  # ADJUST TIME HERE
+                break
+    else:
+        LPWM = 66
+        RPWM = 68
+        motor_left.duty(LPWM)
+        motor_right.duty(RPWM)  # approx straight from graph produced from workshop
+        Lenc = enc.get_left()
+        Renc = enc.get_right()
+        if Renc > Lenc:  # turning left
+            if LPWM > 65:
+                LPWM += -0.1
+            else:
+                RPWM += 0.1
+            sleep(0.1)
+            Lenc = enc.get_left()
+            Renc = enc.get_right()
+        elif Lenc > Renc:  # turning right
+            if LPWM < 70:
+                LPWM += 0.1
+            else:
+                RPWM += -0.1
+            sleep(0.1)
+        else:
+            sleep(0.1)
+            Lenc = enc.get_left()
+            Renc = enc.get_right()
+        print(LPWM, RPWM)
