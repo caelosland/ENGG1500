@@ -1,0 +1,138 @@
+from machine import SoftI2C
+from pyb import Pin, ADC   # Servo
+from time import sleep
+from APDS9960LITE import APDS9960LITE
+import ultrasonic
+from motor import Motor
+from time import sleep
+from OLED import SSD1306_I2C
+# from encoder import Encoder
+
+
+# def clicksneeded(angle):
+#     from math import pi
+#     wheeldiameter = 65
+#     """diameter in mm"""
+#     wheelbase = 140
+#     """wheel base in mm"""
+#     angelturn = angle * pi/180
+#     """defines the angle we want to turn"""
+#     turningradius = wheelbase / 2
+#     cee = wheeldiameter * pi
+#     length = angelturn * turningradius
+#     total = (length/cee)*20
+#     return round(total)
+
+
+TRIG = "D11"
+ECHO = "D10"
+ultrasonic_sensor = ultrasonic.HCSR04(TRIG, ECHO)
+
+motor_right = Motor("left", "D6", "D7", "D4")
+motor_left = Motor("right", "D8", "D9", "D5")
+LPWM = 70
+RPWM = 70
+
+# Initialise I2C bus
+i2c = SoftI2C(scl=Pin("PB13"), sda=Pin("PB14"))
+# Initialise APDS9960
+apds9960 = APDS9960LITE(i2c)    # Create APDS9960 sensor object
+apds9960.prox.enableSensor()    # Send I2C command to enable sensor
+
+sleep(1)    # Let sensor measurement stabilise before starting loop
+
+IR_SensorLH_outer = ADC(Pin('A1'))    # LH outer
+IR_SensorLH_inner = ADC(Pin('A2'))
+IR_SensorRH_inner = ADC(Pin('A3'))
+IR_SensorRH_outer = ADC(Pin('A4'))    # RH outer
+
+# ENC_L = "D2"
+# ENC_R = "D3"
+# enc = Encoder(ENC_L, ENC_R)
+
+# Import necessary modules for OLED
+sleep(1)    # Delay to make OLED actually turn on
+# Initialise the I2C bus and OLED display
+i2c = SoftI2C(scl=Pin("PB8"), sda=Pin("PB9"))
+oled = SSD1306_I2C(128, 64, i2c)
+# Print a hello world to the first line of the display
+oled.text('Hello, World!', 0, 0)
+oled.show()
+# Wait
+sleep(1)
+# Clear the display buffer, removing the hello world
+oled.fill(0)
+oled.text('ENGG1500', 0, 0)
+oled.show()
+# Wait
+sleep(1)
+# Clear the display buffer, removing the hello world
+oled.fill(0)
+# Print a status string to the second line of the display
+oled.text('Hello Jackson', 0, 20)
+oled.show()
+sleep(1)
+oled.text('Hello Joseph', 0, 30)
+oled.show()
+sleep(1)
+# Print the value of a variable to the display by formatting a string
+# As the buffer wasn't filled with zeroes, this will display both lines
+# dummy_measurement = 123.45
+# oled_string = "Var = {}".format(dummy_measurement)
+# oled.text(oled_string, 0, 20)
+# oled.show()
+# sleep(1)
+# Program ends here
+
+
+# while True:
+#     proximity_measurement = apds9960.prox.proximityLevel    # Read the RGB proximity value
+#     ultrasonic_sensor = ultrasonic.HCSR04(TRIG, ECHO)    # Read the ultrasonic proximity value
+#     ultrasonic_distance = ultrasonic_sensor.distance_mm()
+#     IR_LH_outer = IR_SensorLH_outer.read()
+#     IR_LH_inner = IR_SensorLH_inner.read()
+#     IR_RH_inner = IR_SensorRH_inner.read()
+#     IR_RH_outer = IR_SensorRH_outer.read()
+#     RGB = apds9960.prox.proximityLevel
+#     motor_left.set_forwards()
+#     motor_right.set_forwards()
+#     motor_left.duty(LPWM)
+#     motor_right.duty(RPWM)
+#     # sleep(0.1)
+#     # print(proximity_measurement, ultrasonic_distance)
+#     # print(IR_LH_outer, IR_LH_inner, IR_RH_inner, IR_RH_outer, ultrasonic_distance, RGB)
+#
+#     if IR_LH_inner > (IR_RH_inner + 100):
+#         LPWM = 0
+#         RPWM = 71
+#         print("LH INNER")
+#     if IR_RH_inner > (IR_LH_inner + 100):
+#         LPWM = 69
+#         RPWM = 0
+#         print("RH INNER")
+#     if IR_LH_outer > ((IR_LH_inner + IR_RH_inner + 100) / 2):
+#         LPWM = 0
+#         RPWM = 71
+#         print("LH OUTER")
+#     if IR_RH_outer > ((IR_LH_inner + IR_RH_inner + 100) / 2):
+#         LPWM = 69
+#         RPWM = 0
+#         print("RH OUTER")
+#     if 0 < ultrasonic_distance < 150:
+#         if ultrasonic_distance < 100:
+#             LPWM = 69
+#             RPWM = 0
+#         if 101 < ultrasonic_distance < 150:
+#             LPWM = 0
+#             RPWM = 71
+#         if RGB >= 10:
+#             motor_left.duty(0)
+#             motor_right.duty(0)
+#             sleep(5)
+#     # if ultrasonic_front_distance < 200:
+#     #     LPWM = 69
+#     #     RPWM = 0
+#     if ((IR_LH_inner + IR_RH_inner) / 2) > ((IR_LH_outer + IR_RH_outer) / 2) and RGB >= 10:
+#         motor_left.duty(0)
+#         motor_right.duty(0)
+#         sleep(5)
